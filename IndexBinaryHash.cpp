@@ -94,16 +94,16 @@ struct FlipEnumerator {
             return true;
         }
 
-        int i = __builtin_ctzll(x);
+        int i = ctz64(x);
 
         if (i > 0) {
             x ^= (uint64_t)3 << (i - 1);
         } else {
             // nb of LSB 1s
-            int n1 = __builtin_ctzll(~x);
+            int n1 = ctz64(~x);
             // clear them
             x &= ((uint64_t)(-1) << n1);
-            int n2 = __builtin_ctzll(x);
+            int n2 = ctz64(x);
             x ^= (((uint64_t)1 << (n1 + 2)) - 1) << (n2 - n1 - 1);
         }
         return true;

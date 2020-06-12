@@ -437,11 +437,11 @@ void ParameterSpace::set_index_parameters (Index *index, size_t cno) const
 void ParameterSpace::set_index_parameters (
      Index *index, const char *description_in) const
 {
-    char description[strlen(description_in) + 1];
+	auto description = std::make_unique<char[]>(strlen(description_in) + 1);
     char *ptr;
-    memcpy (description, description_in, strlen(description_in) + 1);
+    memcpy (description.get(), description_in, strlen(description_in) + 1);
 
-    for (char *tok = strtok_r (description, " ,", &ptr);
+    for (char *tok = strtok_r (description.get(), " ,", &ptr);
          tok;
          tok = strtok_r (nullptr, " ,", &ptr)) {
         char name[100];

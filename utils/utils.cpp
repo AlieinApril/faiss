@@ -14,9 +14,13 @@
 #include <cstring>
 #include <cmath>
 
-#include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
+
+#ifdef _MSC_VER
+#include <time.h>
+#else
+#include <sys/time.h>
+#endif
 
 #include <omp.h>
 
@@ -66,9 +70,14 @@ int sgemv_(const char *trans, FINTEGER *m, FINTEGER *n, float *alpha,
 namespace faiss {
 
 double getmillisecs () {
-    struct timeval tv;
-    gettimeofday (&tv, nullptr);
-    return tv.tv_sec * 1e3 + tv.tv_usec * 1e-3;
+#ifdef _MSC_VER
+	clock_t t = clock();
+	return ((double)t*1000.0 / CLOCKS_PER_SEC);
+#else
+	struct timeval tv;
+	gettimeofday(&tv, nullptr);
+	return tv.tv_sec * 1e3 + tv.tv_usec * 1e-3;
+#endif
 }
 
 uint64_t get_cycles () {
@@ -319,7 +328,7 @@ size_t ranklist_intersection_size (size_t k1, const int64_t *v1,
         }
         k2 = wp;
     }
-    const int64_t seen_flag = 1L << 60;
+    const int64_t seen_flag = (int64_t)1 << 60;
     size_t count = 0;
     for (size_t i = 0; i < k1; i++) {
         int64_t q = v1 [i];
@@ -436,7 +445,11 @@ namespace {
         }
 
         // compute sub-ranges for each thread
-        SegmentS s1s[nt], s2s[nt], sws[nt];
+        std::vector<SegmentS> s1s_vec(nt), s2s_vec(nt), sws_vec(nt);
+		SegmentS* s1s = s1s_vec.data();
+		SegmentS* s2s = s2s_vec.data();
+		SegmentS* sws = sws_vec.data();
+
         s2s[0].i0 = s2.i0;
         s2s[nt - 1].i1 = s2.i1;
 
@@ -529,7 +542,9 @@ void fvec_argsort_parallel (size_t n, const float *vals,
 
     ArgsortComparator comp = {vals};
 
-    SegmentS segs[nt];
+    //SegmentS segs[nt];
+	std::vector<SegmentS> segs_vec(nt);
+	SegmentS* segs = segs_vec.data();
 
     // independent sorts
 #pragma omp parallel for

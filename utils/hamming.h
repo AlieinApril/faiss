@@ -24,7 +24,9 @@
 #ifndef FAISS_hamming_h
 #define FAISS_hamming_h
 
-
+#ifdef _MSC_VER
+# include <intrin.h>
+#endif
 #include <stdint.h>
 
 #include <faiss/utils/Heap.h>
@@ -107,12 +109,14 @@ struct BitstringReader {
  * Hamming distance computation functions
  **************************************************/
 
-
-
 extern size_t hamming_batch_size;
 
 inline int popcount64(uint64_t x) {
-    return __builtin_popcountl(x);
+#ifdef _MSC_VER
+	return __popcnt64(x);
+#else
+	return __builtin_popcountll(x);
+#endif
 }
 
 

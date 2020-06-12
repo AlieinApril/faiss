@@ -22,7 +22,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
+//#include <unistd.h>
 #include <stdint.h>
 
 #ifdef __SSE__
@@ -488,7 +488,7 @@ void IndexHNSW::init_level_0_from_knngraph(
 #pragma omp parallel for
     for (idx_t i = 0; i < ntotal; i++) {
         DistanceComputer *qdis = storage_distance_computer(storage);
-        float vec[d];
+        float* vec = std::vector<float>(d).data();
         storage->reconstruct(i, vec);
         qdis->set_query(vec);
 
@@ -533,7 +533,7 @@ void IndexHNSW::init_level_0_from_entry_points(
 
         DistanceComputer *dis = storage_distance_computer(storage);
         ScopeDeleter1<DistanceComputer> del(dis);
-        float vec[storage->d];
+        float* vec = std::vector<float>(storage->d).data();
 
 #pragma omp  for schedule(dynamic)
         for (int i = 0; i < n; i++) {
@@ -721,7 +721,7 @@ void ReconstructFromNeighbors::reconstruct(storage_idx_t i, float *x, float *tmp
                 x[l] += w * tmp[l];
         }
     } else {
-        const float *betas[nsq];
+        const float **betas = std::vector<const float*>(nsq).data();
         {
             const float *b = codebook.data();
             const uint8_t *c = &codes[i * code_size];

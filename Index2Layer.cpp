@@ -172,14 +172,14 @@ void Index2Layer::search(
 
 void Index2Layer::reconstruct_n(idx_t i0, idx_t ni, float* recons) const
 {
-    float recons1[d];
+    auto recons1 = std::make_unique<float[]>(d);
     FAISS_THROW_IF_NOT (i0 >= 0 && i0 + ni <= ntotal);
     const uint8_t *rp = &codes[i0 * code_size];
 
     for (idx_t i = 0; i < ni; i++) {
         idx_t key = 0;
         memcpy (&key, rp, code_size_1);
-        q1.quantizer->reconstruct (key, recons1);
+        q1.quantizer->reconstruct (key, recons1.get());
         rp += code_size_1;
         pq.decode (rp, recons);
         for (idx_t j = 0; j < d; j++) {
@@ -284,9 +284,9 @@ struct DistanceXPQ4 : Distance2Level {
 
         for (int m = 0; m < M; m++) {
             __m128 qi = _mm_loadu_ps(qa);
-            __m128 recons = l1_t[m] + pq_l2_t[*code++];
-            __m128 diff = qi - recons;
-            accu += diff * diff;
+            __m128 recons = _mm_add_ps(l1_t[m],pq_l2_t[*code++]);
+            __m128 diff = _mm_sub_ps(qi,recons);
+            accu = _mm_add_ps(accu,_mm_mul_ps(diff,diff));
             pq_l2_t += 256;
             qa += 4;
         }
@@ -337,9 +337,9 @@ struct Distance2xXPQ4 : Distance2Level {
 
             for (int m = 0; m < M_2; m++) {
                 __m128 qi = _mm_loadu_ps(qa);
-                __m128 recons = pq_l1[m] + pq_l2_t[*code++];
-                __m128 diff = qi - recons;
-                accu += diff * diff;
+                __m128 recons = _mm_add_ps(pq_l1[m],pq_l2_t[*code++]);
+                __m128 diff = _mm_sub_ps(qi,recons);
+                accu = _mm_add_ps(accu, _mm_mul_ps(diff,diff));
                 pq_l2_t += 256;
                 qa += 4;
             }

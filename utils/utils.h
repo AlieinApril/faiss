@@ -16,11 +16,25 @@
 #ifndef FAISS_utils_h
 #define FAISS_utils_h
 
+#if defined(_MSC_VER) && defined(_WIN64)
+#include <intrin.h>
+#endif
 #include <stdint.h>
 
 #include <faiss/utils/Heap.h>
 
+#if defined(_MSC_VER)
+ /* We are on Windows */
+# define strtok_r strtok_s
+#endif
 
+#if defined(_MSC_VER)
+#define ALIGNED_(x) __declspec(align(x))
+#else
+#if defined(__GNUC__)
+#define ALIGNED_(x) __attribute__ ((aligned(x)))
+#endif
+#endif
 namespace faiss {
 
 
@@ -160,6 +174,49 @@ uint64_t hash_bytes (const uint8_t *bytes, int64_t n);
 /** Whether OpenMP annotations were respected. */
 bool check_openmp();
 
+#ifdef _MSC_VER 
+	#ifdef _WIN64
+
+	static inline int ctz(uint32_t x) {
+		unsigned long ret;
+		_BitScanForward(&ret, x);
+		return (int)ret;
+	}
+
+	static inline int ctz64(uint64_t x) {
+		unsigned long ret;
+		_BitScanForward64(&ret, x);
+		return (int)ret;
+	}
+
+	static inline int clz(uint32_t x) {
+		return (int)__lzcnt(x);
+	}
+
+	static inline int clz64(uint64_t x) {
+		return (int)__lzcnt64(x);
+	}
+	#endif
+#else
+#ifdef __x86_64__
+	static inline int ctz(uint32_t x) {
+		return __builtin_ctz(x);
+	}
+
+	static inline int ctz64(uint64_t x) {
+		return __builtin_ctzll(x);
+	}
+
+	static inline int clz(uint32_t x) {
+		return __builtin_clz(x);
+	}
+
+	static inline int clz64(uint64_t x) {
+		return __builtin_clzll(x);
+	}
+#endif 
+
+#endif
 } // namspace faiss
 
 

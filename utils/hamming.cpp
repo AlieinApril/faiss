@@ -28,6 +28,7 @@
 
 #include <vector>
 #include <memory>
+#include <algorithm>
 #include <stdio.h>
 #include <math.h>
 

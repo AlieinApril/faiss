@@ -9,7 +9,7 @@
 
 #include <cstring>
 #include <cassert>
-
+#include <algorithm>
 #include <faiss/impl/io.h>
 #include <faiss/impl/FaissAssert.h>
 

@@ -319,7 +319,7 @@ void IndexSplitVectors::search (
                     distances[j] += distances_i[j];
                 } else {
                     labels[j] = -1;
-                    distances[j] = 0.0 / 0.0;
+                    distances[j] = std::numeric_limits<double>::quiet_NaN();
                 }
             }
         }

@@ -14,7 +14,7 @@
 
 #include <cstdio>
 #include <memory>
-
+#include <algorithm>
 #include <faiss/utils/utils.h>
 #include <faiss/utils/hamming.h>
 

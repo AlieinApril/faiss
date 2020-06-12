@@ -10,6 +10,7 @@
 #include <faiss/IndexBinaryFromFloat.h>
 
 #include <memory>
+#include <algorithm>
 #include <faiss/utils/utils.h>
 
 namespace faiss {

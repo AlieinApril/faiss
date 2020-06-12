@@ -6,7 +6,7 @@
  */
 
 // -*- c++ -*-
-
+#include <faiss/utils/utils.h>
 #include <faiss/utils/distances.h>
 
 #include <cstdio>
@@ -14,7 +14,7 @@
 #include <cstring>
 #include <cmath>
 
-#ifdef __SSE__
+#if defined(__SSE__) || defined(__AVX__)
 #include <immintrin.h>
 #endif
 
@@ -139,7 +139,7 @@ void fvec_L2sqr_ny_ref (float * dis,
 static inline __m128 masked_read (int d, const float *x)
 {
     assert (0 <= d && d < 4);
-    __attribute__((__aligned__(16))) float buf[4] = {0, 0, 0, 0};
+	ALIGNED_(16) float buf[4] = {0, 0, 0, 0};
     switch (d) {
       case 3:
         buf[2] = x[2];
@@ -188,8 +188,8 @@ void fvec_L2sqr_ny_D1 (float * dis, const float * x,
     size_t i;
     for (i = 0; i + 3 < ny; i += 4) {
         __m128 tmp, accu;
-        tmp = x0 - _mm_loadu_ps (y); y += 4;
-        accu = tmp * tmp;
+        tmp = _mm_sub_ps(x0, _mm_loadu_ps (y)); y += 4;
+        accu = _mm_mul_ps(tmp,tmp);
         dis[i] = _mm_cvtss_f32 (accu);
         tmp = _mm_shuffle_ps (accu, accu, 1);
         dis[i + 1] = _mm_cvtss_f32 (tmp);
@@ -212,8 +212,8 @@ void fvec_L2sqr_ny_D2 (float * dis, const float * x,
     size_t i;
     for (i = 0; i + 1 < ny; i += 2) {
         __m128 tmp, accu;
-        tmp = x0 - _mm_loadu_ps (y); y += 4;
-        accu = tmp * tmp;
+        tmp = _mm_sub_ps(x0, _mm_loadu_ps (y)); y += 4;
+        accu = _mm_mul_ps(tmp , tmp);
         accu = _mm_hadd_ps (accu, accu);
         dis[i] = _mm_cvtss_f32 (accu);
         accu = _mm_shuffle_ps (accu, accu, 3);
@@ -233,8 +233,8 @@ void fvec_L2sqr_ny_D4 (float * dis, const float * x,
 
     for (size_t i = 0; i < ny; i++) {
         __m128 tmp, accu;
-        tmp = x0 - _mm_loadu_ps (y); y += 4;
-        accu = tmp * tmp;
+        tmp = _mm_sub_ps(x0 , _mm_loadu_ps (y)); y += 4;
+        accu = _mm_mul_ps(tmp , tmp);
         accu = _mm_hadd_ps (accu, accu);
         accu = _mm_hadd_ps (accu, accu);
         dis[i] = _mm_cvtss_f32 (accu);
@@ -250,10 +250,10 @@ void fvec_L2sqr_ny_D8 (float * dis, const float * x,
 
     for (size_t i = 0; i < ny; i++) {
         __m128 tmp, accu;
-        tmp = x0 - _mm_loadu_ps (y); y += 4;
-        accu = tmp * tmp;
-        tmp = x1 - _mm_loadu_ps (y); y += 4;
-        accu += tmp * tmp;
+        tmp = _mm_sub_ps(x0,_mm_loadu_ps (y)); y += 4;
+        accu = _mm_mul_ps(tmp, tmp);
+        tmp = _mm_sub_ps(x1, _mm_loadu_ps (y)); y += 4;
+        accu = _mm_add_ps(accu,_mm_mul_ps(tmp, tmp));
         accu = _mm_hadd_ps (accu, accu);
         accu = _mm_hadd_ps (accu, accu);
         dis[i] = _mm_cvtss_f32 (accu);
@@ -270,12 +270,12 @@ void fvec_L2sqr_ny_D12 (float * dis, const float * x,
 
     for (size_t i = 0; i < ny; i++) {
         __m128 tmp, accu;
-        tmp = x0 - _mm_loadu_ps (y); y += 4;
-        accu = tmp * tmp;
-        tmp = x1 - _mm_loadu_ps (y); y += 4;
-        accu += tmp * tmp;
-        tmp = x2 - _mm_loadu_ps (y); y += 4;
-        accu += tmp * tmp;
+        tmp = _mm_sub_ps(x0,_mm_loadu_ps (y)); y += 4;
+        accu = _mm_mul_ps(tmp,tmp);
+        tmp = _mm_sub_ps(x1,_mm_loadu_ps (y)); y += 4;
+        accu = _mm_add_ps(accu,_mm_mul_ps(tmp,tmp));
+        tmp = _mm_sub_ps(x2,_mm_loadu_ps (y)); y += 4;
+        accu = _mm_add_ps(accu, _mm_mul_ps(tmp,tmp));
         accu = _mm_hadd_ps (accu, accu);
         accu = _mm_hadd_ps (accu, accu);
         dis[i] = _mm_cvtss_f32 (accu);
@@ -346,7 +346,7 @@ float fvec_inner_product (const float * x,
     }
 
     __m128 msum2 = _mm256_extractf128_ps(msum1, 1);
-    msum2 +=       _mm256_extractf128_ps(msum1, 0);
+    msum2 =   _mm_add_ps(msum2,_mm256_extractf128_ps(msum1, 0));
 
     if (d >= 4) {
         __m128 mx = _mm_loadu_ps (x); x += 4;
@@ -375,27 +375,27 @@ float fvec_L2sqr (const float * x,
     while (d >= 8) {
         __m256 mx = _mm256_loadu_ps (x); x += 8;
         __m256 my = _mm256_loadu_ps (y); y += 8;
-        const __m256 a_m_b1 = mx - my;
-        msum1 += a_m_b1 * a_m_b1;
+        const __m256 a_m_b1 = _mm256_sub_ps(mx,my);
+        msum1 = _mm256_add_ps(msum1,_mm256_mul_ps(a_m_b1,a_m_b1));
         d -= 8;
     }
 
     __m128 msum2 = _mm256_extractf128_ps(msum1, 1);
-    msum2 +=       _mm256_extractf128_ps(msum1, 0);
+    msum2 =   _mm_add_ps(msum2,_mm256_extractf128_ps(msum1, 0));
 
     if (d >= 4) {
         __m128 mx = _mm_loadu_ps (x); x += 4;
         __m128 my = _mm_loadu_ps (y); y += 4;
-        const __m128 a_m_b1 = mx - my;
-        msum2 += a_m_b1 * a_m_b1;
+        const __m128 a_m_b1 = _mm_sub_ps(mx,my);
+        msum2 = _mm_add_ps(msum2,_mm_mul_ps(a_m_b1, a_m_b1));
         d -= 4;
     }
 
     if (d > 0) {
         __m128 mx = masked_read (d, x);
         __m128 my = masked_read (d, y);
-        __m128 a_m_b1 = mx - my;
-        msum2 += a_m_b1 * a_m_b1;
+        __m128 a_m_b1 = _mm_sub_ps(mx,my);
+        msum2 = _mm_add_ps(msum2, _mm_mul_ps(a_m_b1, a_m_b1));
     }
 
     msum2 = _mm_hadd_ps (msum2, msum2);
@@ -406,33 +406,33 @@ float fvec_L2sqr (const float * x,
 float fvec_L1 (const float * x, const float * y, size_t d)
 {
     __m256 msum1 = _mm256_setzero_ps();
-    __m256 signmask = __m256(_mm256_set1_epi32 (0x7fffffffUL));
+    __m256 signmask = _mm256_castsi256_ps(_mm256_set1_epi32 (0x7fffffffUL));
 
     while (d >= 8) {
         __m256 mx = _mm256_loadu_ps (x); x += 8;
         __m256 my = _mm256_loadu_ps (y); y += 8;
-        const __m256 a_m_b = mx - my;
-        msum1 += _mm256_and_ps(signmask, a_m_b);
+        const __m256 a_m_b = _mm256_sub_ps(mx,my);
+        msum1 = _mm256_add_ps(msum1,_mm256_and_ps(signmask, a_m_b));
         d -= 8;
     }
 
     __m128 msum2 = _mm256_extractf128_ps(msum1, 1);
-    msum2 +=       _mm256_extractf128_ps(msum1, 0);
-    __m128 signmask2 = __m128(_mm_set1_epi32 (0x7fffffffUL));
+    msum2 =  _mm_add_ps(msum2,_mm256_extractf128_ps(msum1, 0));
+    __m128 signmask2 = _mm_castsi128_ps(_mm_set1_epi32 (0x7fffffffUL));
 
     if (d >= 4) {
         __m128 mx = _mm_loadu_ps (x); x += 4;
         __m128 my = _mm_loadu_ps (y); y += 4;
-        const __m128 a_m_b = mx - my;
-        msum2 += _mm_and_ps(signmask2, a_m_b);
+        const __m128 a_m_b = _mm_sub_ps(mx,my);
+        msum2 = _mm_add_ps(msum2,_mm_and_ps(signmask2, a_m_b));
         d -= 4;
     }
 
     if (d > 0) {
         __m128 mx = masked_read (d, x);
         __m128 my = masked_read (d, y);
-        __m128 a_m_b = mx - my;
-        msum2 += _mm_and_ps(signmask2, a_m_b);
+        __m128 a_m_b = _mm_sub_ps(mx, my);
+        msum2 = _mm_add_ps(msum2,_mm_and_ps(signmask2, a_m_b));
     }
 
     msum2 = _mm_hadd_ps (msum2, msum2);
@@ -443,24 +443,24 @@ float fvec_L1 (const float * x, const float * y, size_t d)
 float fvec_Linf (const float * x, const float * y, size_t d)
 {
     __m256 msum1 = _mm256_setzero_ps();
-    __m256 signmask = __m256(_mm256_set1_epi32 (0x7fffffffUL));
+    __m256 signmask = _mm256_castsi256_ps(_mm256_set1_epi32 (0x7fffffffUL));
 
     while (d >= 8) {
         __m256 mx = _mm256_loadu_ps (x); x += 8;
         __m256 my = _mm256_loadu_ps (y); y += 8;
-        const __m256 a_m_b = mx - my;
+        const __m256 a_m_b = _mm256_sub_ps(mx,my);
         msum1 = _mm256_max_ps(msum1, _mm256_and_ps(signmask, a_m_b));
         d -= 8;
     }
 
     __m128 msum2 = _mm256_extractf128_ps(msum1, 1);
     msum2 = _mm_max_ps (msum2, _mm256_extractf128_ps(msum1, 0));
-    __m128 signmask2 = __m128(_mm_set1_epi32 (0x7fffffffUL));
+    __m128 signmask2 = _mm_castsi128_ps(_mm_set1_epi32 (0x7fffffffUL));
 
     if (d >= 4) {
         __m128 mx = _mm_loadu_ps (x); x += 4;
         __m128 my = _mm_loadu_ps (y); y += 4;
-        const __m128 a_m_b = mx - my;
+        const __m128 a_m_b = _mm_sub_ps(mx,my);
         msum2 = _mm_max_ps(msum2, _mm_and_ps(signmask2, a_m_b));
         d -= 4;
     }
@@ -468,7 +468,7 @@ float fvec_Linf (const float * x, const float * y, size_t d)
     if (d > 0) {
         __m128 mx = masked_read (d, x);
         __m128 my = masked_read (d, y);
-        __m128 a_m_b = mx - my;
+        __m128 a_m_b = _mm_sub_ps(mx,my);
         msum2 = _mm_max_ps(msum2, _mm_and_ps(signmask2, a_m_b));
     }
 
@@ -748,7 +748,7 @@ static inline int fvec_madd_and_argmin_sse (
     while (n--) {
         __m128 vc4 = _mm_add_ps (*a4, _mm_mul_ps (bf4, *b4));
         *c4 = vc4;
-        __m128i mask = (__m128i)_mm_cmpgt_ps (vmin4, vc4);
+        __m128i mask = _mm_castps_si128(_mm_cmpgt_ps (vmin4, vc4));
         // imin4 = _mm_blendv_epi8 (imin4, idx4, mask); // slower!
 
         imin4 = _mm_or_si128 (_mm_and_si128 (mask, idx4),
@@ -764,7 +764,7 @@ static inline int fvec_madd_and_argmin_sse (
     {
         idx4 = _mm_shuffle_epi32 (imin4, 3 << 2 | 2);
         __m128 vc4 = _mm_shuffle_ps (vmin4, vmin4, 3 << 2 | 2);
-        __m128i mask = (__m128i)_mm_cmpgt_ps (vmin4, vc4);
+        __m128i mask = _mm_castps_si128(_mm_cmpgt_ps (vmin4, vc4));
         imin4 = _mm_or_si128 (_mm_and_si128 (mask, idx4),
                               _mm_andnot_si128 (mask, imin4));
         vmin4 = _mm_min_ps (vmin4, vc4);
@@ -773,7 +773,7 @@ static inline int fvec_madd_and_argmin_sse (
     {
         idx4 = _mm_shuffle_epi32 (imin4, 1);
         __m128 vc4 = _mm_shuffle_ps (vmin4, vmin4, 1);
-        __m128i mask = (__m128i)_mm_cmpgt_ps (vmin4, vc4);
+        __m128i mask = _mm_castps_si128(_mm_cmpgt_ps (vmin4, vc4));
         imin4 = _mm_or_si128 (_mm_and_si128 (mask, idx4),
                               _mm_andnot_si128 (mask, imin4));
         // vmin4 = _mm_min_ps (vmin4, vc4);

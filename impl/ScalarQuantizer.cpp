@@ -82,9 +82,9 @@ struct Codec8bit {
         i8 = _mm256_insertf128_si256 (i8, c4hi, 1);
         __m256 f8 = _mm256_cvtepi32_ps (i8);
         __m256 half = _mm256_set1_ps (0.5f);
-        f8 += half;
+		f8 = _mm256_add_ps(f8, half);
         __m256 one_255 = _mm256_set1_ps (1.f / 255.f);
-        return f8 * one_255;
+        return _mm256_mul_ps(f8, one_255);
     }
 #endif
 };
@@ -117,9 +117,9 @@ struct Codec4bit {
         i8 = _mm256_insertf128_si256 (i8, c4hi, 1);
         __m256 f8 = _mm256_cvtepi32_ps (i8);
         __m256 half = _mm256_set1_ps (0.5f);
-        f8 += half;
+        f8 = _mm256_add_ps(f8,half);
         __m256 one_255 = _mm256_set1_ps (1.f / 15.f);
-        return f8 * one_255;
+        return _mm256_mul_ps(f8,one_255);
     }
 #endif
 };
@@ -779,13 +779,13 @@ struct SimilarityL2<8> {
     void add_8_components (__m256 x) {
         __m256 yiv = _mm256_loadu_ps (yi);
         yi += 8;
-        __m256 tmp = yiv - x;
-        accu8 += tmp * tmp;
+        __m256 tmp = _mm256_sub_ps(yiv,x);
+		accu8 = _mm256_add_ps(accu8, _mm256_mul_ps(tmp, tmp));
     }
 
     void add_8_components_2 (__m256 x, __m256 y) {
-        __m256 tmp = y - x;
-        accu8 += tmp * tmp;
+        __m256 tmp = _mm256_sub_ps(y,x);
+		accu8 = _mm256_add_ps(accu8, _mm256_mul_ps(tmp, tmp));
     }
 
     float result_8 () {
@@ -859,11 +859,11 @@ struct SimilarityIP<8> {
     void add_8_components (__m256 x) {
         __m256 yiv = _mm256_loadu_ps (yi);
         yi += 8;
-        accu8 += yiv * x;
+		accu8 = _mm256_add_ps(accu8, _mm256_mul_ps(yiv, x));
     }
 
     void add_8_components_2 (__m256 x1, __m256 x2) {
-        accu8 += x1 * x2;
+		accu8 = _mm256_add_ps(accu8, _mm256_mul_ps(x1, x2));
     }
 
     float result_8 () {

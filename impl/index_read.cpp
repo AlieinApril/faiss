@@ -12,10 +12,14 @@
 #include <cstdio>
 #include <cstdlib>
 
+#if _WIN32 || _WIN64 
+#else
 #include <sys/mman.h>
+#include <unistd.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
+
 
 #include <faiss/impl/FaissAssert.h>
 #include <faiss/impl/io.h>
@@ -196,6 +200,9 @@ static void read_ArrayInvertedLists_sizes (
 }
 
 InvertedLists *read_InvertedLists (IOReader *f, int io_flags) {
+#ifdef _WIN32 || _WIN64
+	throw std::runtime_error("not implemented");
+#else
     uint32_t h;
     READ1 (h);
     if (h == fourcc ("il00")) {
@@ -309,6 +316,7 @@ InvertedLists *read_InvertedLists (IOReader *f, int io_flags) {
     } else {
         FAISS_THROW_MSG ("read_InvertedLists: unsupported invlist type");
     }
+#endif
 }
 
 static void read_InvertedLists (
