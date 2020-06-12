@@ -10,7 +10,7 @@
 
 #include <memory>
 #include <vector>
-
+#include <random>
 #include <gtest/gtest.h>
 
 #include <faiss/IndexIVF.h>
@@ -46,9 +46,13 @@ int window_size = 10;
 
 std::vector<float> make_data(size_t n)
 {
-    std::vector <float> database (n * d);
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<float> dis(0, 1);
+	std::vector <float> database (n * d);
     for (size_t i = 0; i < n * d; i++) {
-        database[i] = drand48();
+        //database[i] = drand48();
+		database[i] = dis(gen);
     }
     return database;
 }
@@ -82,7 +86,9 @@ std::vector<idx_t> search_index(Index *index, const float *xq) {
 // make a few slices of indexes that can be merged
 void make_index_slices (const Index* trained_index,
                         std::vector<std::unique_ptr<Index> > & sub_indexes) {
-
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_int_distribution<int32_t> dis(0, 0x7fffffff);
     for (int i = 0; i < total_size; i++) {
         sub_indexes.emplace_back (clone_index (trained_index));
 
@@ -93,7 +99,8 @@ void make_index_slices (const Index* trained_index,
         auto xb = make_data(nb * d);
         std::vector<faiss::Index::idx_t> ids (nb);
         for (int j = 0; j < nb; j++) {
-            ids[j] = lrand48();
+            //ids[j] = lrand48();
+			ids[j] = dis(gen);
         }
         index->add_with_ids (nb, xb.data(), ids.data());
     }

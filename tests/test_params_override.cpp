@@ -10,7 +10,7 @@
 
 #include <memory>
 #include <vector>
-
+#include <random>
 #include <gtest/gtest.h>
 
 #include <faiss/IndexIVF.h>
@@ -39,9 +39,13 @@ size_t nq = 200;
 
 std::vector<float> make_data(size_t n)
 {
-    std::vector <float> database (n * d);
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<float> dis(0, 1);
+	std::vector <float> database (n * d);
     for (size_t i = 0; i < n * d; i++) {
-        database[i] = drand48();
+        //database[i] = drand48();
+		database[i] = dis(gen);
     }
     return database;
 }
@@ -154,9 +158,13 @@ TEST(TPO, IVFFlatPP) {
 
 
 std::vector<uint8_t> make_data_binary(size_t n) {
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_int_distribution<int32_t> dis(0, 0x7fffffff);
     std::vector <uint8_t> database (n * d / 8);
     for (size_t i = 0; i < n * d / 8; i++) {
-        database[i] = lrand48();
+        //database[i] = lrand48();
+		database[i] = dis(gen);
     }
     return database;
 }

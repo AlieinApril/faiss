@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 #include <thread>
-
+#include <random>
 #include <gtest/gtest.h>
 
 #include <faiss/IndexIVF.h>
@@ -47,9 +47,13 @@ int k = 10;
 
 std::vector<float> make_data(size_t n)
 {
-    std::vector <float> database (n * d);
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<float> dis(0, 1);
+	std::vector <float> database (n * d);
     for (size_t i = 0; i < n * d; i++) {
-        database[i] = drand48();
+        //database[i] = drand48();
+		database[i] = dis(gen);
     }
     return database;
 }
@@ -272,9 +276,14 @@ int nbit = 256;
 std::vector<uint8_t> make_data_binary(size_t n)
 {
 
-    std::vector <uint8_t> database (n * nbit / 8);
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_int_distribution<int32_t> dis(0, 0x7fffffff);
+	std::vector <uint8_t> database (n * nbit / 8);
+	//The lrand48() and nrand48() functions return nonnegative long integers uniformly distributed between 0 and 2 ^ 31.
     for (size_t i = 0; i < n * d; i++) {
-        database[i] = lrand48();
+        //database[i] = lrand48();
+		database[i] = dis(gen);
     }
     return database;
 }
