@@ -8,7 +8,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-
+#include <random>
 #include <gtest/gtest.h>
 
 #include <faiss/IndexIVFPQ.h>
@@ -39,13 +39,18 @@ TEST(IVFPQ, accuracy) {
     // index that gives the ground-truth
     faiss::IndexFlatL2 index_gt (d);
 
-    srand48 (35);
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<float> dis(0, 1);
+	gen.seed(35);
+    //srand48 (35);
 
     { // training
 
         std::vector <float> trainvecs (nt * d);
         for (size_t i = 0; i < nt * d; i++) {
-            trainvecs[i] = drand48();
+            //trainvecs[i] = drand48();
+			trainvecs[i] = dis(gen);
         }
         index.verbose = true;
         index.train (nt, trainvecs.data());
@@ -55,7 +60,8 @@ TEST(IVFPQ, accuracy) {
 
         std::vector <float> database (nb * d);
         for (size_t i = 0; i < nb * d; i++) {
-            database[i] = drand48();
+            //database[i] = drand48();
+			database[i] = dis(gen);
         }
 
         index.add (nb, database.data());
@@ -69,7 +75,8 @@ TEST(IVFPQ, accuracy) {
 
         std::vector <float> queries (nq * d);
         for (size_t i = 0; i < nq * d; i++) {
-            queries[i] = drand48();
+            //queries[i] = drand48();
+			queries[i] = dis(gen);
         }
 
         std::vector<faiss::Index::idx_t> gt_nns (nq);

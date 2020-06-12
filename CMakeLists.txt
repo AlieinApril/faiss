@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 3.15)
 
 # faiss project
 project(faiss C CXX)
@@ -30,8 +30,8 @@ if(NOT MSVC)
 	message("adding CXX flags -std=c++11 -fPIC -m64	-Wall -g -O3  -msse4 -mpopcnt -fopenmp -Wno-sign-compare -fpermissive")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC -m64 -Wall -g -O3  -msse4 -mpopcnt -fopenmp -Wno-sign-compare -fpermissive")
 else(NOT MSVC)
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	add_definitions(-D__AVX__ -D__SSE__)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:AVX")
 endif(NOT MSVC)
 add_definitions(-DFINTEGER=int)
 
@@ -68,6 +68,8 @@ endif(BUILD_TUTORIAL)
 
 # build tests
 if(BUILD_TEST)
+	enable_testing()
+	include(GoogleTest)
     add_subdirectory(tests)
 endif(BUILD_TEST)
 # Install libraries

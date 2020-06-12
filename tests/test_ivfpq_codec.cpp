@@ -7,6 +7,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <random>
 
 #include <gtest/gtest.h>
 
@@ -50,9 +51,14 @@ double eval_codec_error (long ncentroids, long m, const std::vector<float> &v)
 
 TEST(IVFPQ, codec) {
 
-    std::vector <float> database (nb * d);
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<float> dis(0, 1.0);
+
+	std::vector <float> database (nb * d);
     for (size_t i = 0; i < nb * d; i++) {
-        database[i] = drand48();
+        //database[i] = drand48();
+		database[i] = dis(gen);
     }
 
     double err0 = eval_codec_error(16, 8, database);
