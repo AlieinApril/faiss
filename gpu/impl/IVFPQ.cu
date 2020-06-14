@@ -119,7 +119,7 @@ IVFPQ::setPrecomputedCodes(bool enable) {
 
 int
 IVFPQ::classifyAndAddVectors(Tensor<float, 2, true>& vecs,
-                             Tensor<long, 1, true>& indices) {
+                             Tensor<int64_t, 1, true>& indices) {
   FAISS_ASSERT(vecs.getSize(0) == indices.getSize(0));
   FAISS_ASSERT(vecs.getSize(1) == dim_);
 
@@ -357,7 +357,7 @@ IVFPQ::classifyAndAddVectors(Tensor<float, 2, true>& vecs,
 void
 IVFPQ::addCodeVectorsFromCpu(int listId,
                              const void* codes,
-                             const long* indices,
+                             const int64_t* indices,
                              size_t numVecs) {
   // This list must already exist
   FAISS_ASSERT(listId < deviceListData_.size());
@@ -539,7 +539,7 @@ IVFPQ::query(Tensor<float, 2, true>& queries,
              int nprobe,
              int k,
              Tensor<float, 2, true>& outDistances,
-             Tensor<long, 2, true>& outIndices) {
+             Tensor<int64_t, 2, true>& outIndices) {
   // These are caught at a higher level
   FAISS_ASSERT(nprobe <= GPU_MAX_SELECTION_K);
   FAISS_ASSERT(k <= GPU_MAX_SELECTION_K);

@@ -14,7 +14,7 @@ namespace faiss { namespace gpu {
 // Utility function to translate (list id, offset) to a user index on
 // the CPU. In a cpp in order to use OpenMP
 void ivfOffsetToUserIndex(
-  long* indices,
+  int64_t* indices,
   int numLists,
   int queries,
   int k,

@@ -155,7 +155,7 @@ runIVFPQInvertedListAppend(Tensor<int, 1, true>& listIds,
 __global__ void
 ivfFlatIndicesAppend(Tensor<int, 1, true> listIds,
                      Tensor<int, 1, true> listOffset,
-                     Tensor<long, 1, true> indices,
+                     Tensor<int64_t, 1, true> indices,
                      IndicesOptions opt,
                      void** listIndices) {
   int vec = blockIdx.x * blockDim.x + threadIdx.x;
@@ -172,7 +172,7 @@ ivfFlatIndicesAppend(Tensor<int, 1, true> listIds,
     return;
   }
 
-  long index = indices[vec];
+  int64_t index = indices[vec];
 
   if (opt == INDICES_32_BIT) {
     // FIXME: there could be overflow here, but where should we check this?
@@ -243,7 +243,7 @@ void
 runIVFFlatInvertedListAppend(Tensor<int, 1, true>& listIds,
                              Tensor<int, 1, true>& listOffset,
                              Tensor<float, 2, true>& vecs,
-                             Tensor<long, 1, true>& indices,
+                             Tensor<int64_t, 1, true>& indices,
                              bool useResidual,
                              Tensor<float, 2, true>& residuals,
                              GpuScalarQuantizer* scalarQ,

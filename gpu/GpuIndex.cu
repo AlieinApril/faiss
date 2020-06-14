@@ -14,7 +14,7 @@
 #include <faiss/gpu/utils/StaticUtils.h>
 #include <limits>
 #include <memory>
-
+#include <algorithm>
 namespace faiss { namespace gpu {
 
 /// Default CPU search size for which we use paged copies

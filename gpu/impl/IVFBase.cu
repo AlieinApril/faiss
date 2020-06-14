@@ -89,7 +89,7 @@ IVFBase::reset() {
     deviceListIndices_.emplace_back(
       std::unique_ptr<DeviceVector<unsigned char>>(
         new DeviceVector<unsigned char>(space_)));
-    listOffsetToUserIndex_.emplace_back(std::vector<long>());
+    listOffsetToUserIndex_.emplace_back(std::vector<int64_t>());
   }
 
   deviceListDataPointers_.resize(numLists_, nullptr);
@@ -205,7 +205,7 @@ IVFBase::getListLength(int listId) const {
   return deviceListLengths_[listId];
 }
 
-std::vector<long>
+std::vector<int64_t>
 IVFBase::getListIndices(int listId) const {
   FAISS_ASSERT(listId < numLists_);
 
@@ -215,16 +215,16 @@ IVFBase::getListIndices(int listId) const {
     auto intInd = deviceListIndices_[listId]->copyToHost<int>(
       resources_->getDefaultStreamCurrentDevice());
 
-    std::vector<long> out(intInd.size());
+    std::vector<int64_t> out(intInd.size());
     for (size_t i = 0; i < intInd.size(); ++i) {
-      out[i] = (long) intInd[i];
+      out[i] = (int64_t) intInd[i];
     }
 
     return out;
   } else if (indicesOptions_ == INDICES_64_BIT) {
     FAISS_ASSERT(listId < deviceListIndices_.size());
 
-    return deviceListIndices_[listId]->copyToHost<long>(
+    return deviceListIndices_[listId]->copyToHost<int64_t>(
       resources_->getDefaultStreamCurrentDevice());
   } else if (indicesOptions_ == INDICES_CPU) {
     FAISS_ASSERT(listId < deviceListData_.size());
@@ -239,7 +239,7 @@ IVFBase::getListIndices(int listId) const {
   } else {
     // unhandled indices type (includes INDICES_IVF)
     FAISS_ASSERT(false);
-    return std::vector<long>();
+    return std::vector<int64_t>();
   }
 }
 
@@ -254,7 +254,7 @@ IVFBase::getListVectors(int listId) const {
 
 void
 IVFBase::addIndicesFromCpu_(int listId,
-                            const long* indices,
+                            const int64_t* indices,
                             size_t numVecs) {
   auto stream = resources_->getDefaultStreamCurrentDevice();
 
