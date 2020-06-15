@@ -7,6 +7,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <random>
 
 #include <faiss/IndexFlat.h>
 #include <faiss/IndexIVFPQ.h>
@@ -17,18 +18,24 @@ int main() {
     int nb = 100000;                       // database size
     int nq = 10000;                        // nb of queries
 
-    float *xb = new float[d * nb];
-    float *xq = new float[d * nq];
+	std::vector<float> xb(d * nb);
+	std::vector<float> xq(d* nq);
+
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<float> dis(0, 1);
 
     for(int i = 0; i < nb; i++) {
         for(int j = 0; j < d; j++)
-            xb[d * i + j] = drand48();
+            //xb[d * i + j] = drand48();
+			xb[d * i + j] = dis(gen);
         xb[d * i] += i / 1000.;
     }
 
     for(int i = 0; i < nq; i++) {
-        for(int j = 0; j < d; j++)
-            xq[d * i + j] = drand48();
+		for (int j = 0; j < d; j++)
+			//xq[d * i + j] = drand48();
+			xq[d * i + j] = dis(gen);
         xq[d * i] += i / 1000.;
     }
 
@@ -39,14 +46,14 @@ int main() {
     faiss::IndexFlatL2 quantizer(d);       // the other index
     faiss::IndexIVFPQ index(&quantizer, d, nlist, m, 8);
     // here we specify METRIC_L2, by default it performs inner-product search
-    index.train(nb, xb);
-    index.add(nb, xb);
+    index.train(nb, xb.data());
+    index.add(nb, xb.data());
 
     {       // sanity check
-        long *I = new long[k * 5];
-        float *D = new float[k * 5];
+		std::vector<int64_t> I(k * nq);
+		std::vector<float> D(k * nq);
 
-        index.search(5, xb, k, D, I);
+        index.search(5, xb.data(), k, D.data(), I.data());
 
         printf("I=\n");
         for(int i = 0; i < 5; i++) {
@@ -61,17 +68,14 @@ int main() {
                 printf("%7g ", D[i * k + j]);
             printf("\n");
         }
-
-        delete [] I;
-        delete [] D;
     }
 
     {       // search xq
-        long *I = new long[k * nq];
-        float *D = new float[k * nq];
+		std::vector<int64_t> I(k * nq);
+		std::vector<float> D(k * nq);
 
         index.nprobe = 10;
-        index.search(nq, xq, k, D, I);
+        index.search(nq, xq.data(), k, D.data(), I.data());
 
         printf("I=\n");
         for(int i = nq - 5; i < nq; i++) {
@@ -79,15 +83,7 @@ int main() {
                 printf("%5ld ", I[i * k + j]);
             printf("\n");
         }
-
-        delete [] I;
-        delete [] D;
     }
-
-
-
-    delete [] xb;
-    delete [] xq;
 
     return 0;
 }

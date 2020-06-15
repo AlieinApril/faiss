@@ -7,7 +7,7 @@
 
 #include <cstdio>
 #include <cstdlib>
-
+#include <random>
 #include <faiss/IndexFlat.h>
 #include <faiss/gpu/GpuAutoTune.h>
 #include <faiss/gpu/GpuCloner.h>
@@ -21,18 +21,23 @@ int main() {
     int nb = 100000;                       // database size
     int nq = 10000;                        // nb of queries
 
-    float *xb = new float[d * nb];
-    float *xq = new float[d * nq];
+    std::vector<float> xb(d * nb);
+    std::vector<float> xq(d* nq);
 
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<float> dis(0, 1);
     for(int i = 0; i < nb; i++) {
         for(int j = 0; j < d; j++)
-            xb[d * i + j] = drand48();
+            //xb[d * i + j] = drand48();
+			xb[d * i + j] = dis(gen);
         xb[d * i] += i / 1000.;
     }
 
     for(int i = 0; i < nq; i++) {
         for(int j = 0; j < d; j++)
-            xq[d * i + j] = drand48();
+            //xq[d * i + j] = drand48();
+			xq[d * i + j] = dis(gen);
         xq[d * i] += i / 1000.;
     }
 
@@ -57,16 +62,16 @@ int main() {
         );
 
     printf("is_trained = %s\n", gpu_index->is_trained ? "true" : "false");
-    gpu_index->add(nb, xb);  // add vectors to the index
+    gpu_index->add(nb, xb.data());  // add vectors to the index
     printf("ntotal = %ld\n", gpu_index->ntotal);
 
     int k = 4;
 
     {       // search xq
-        long *I = new long[k * nq];
-        float *D = new float[k * nq];
+		std::vector<int64_t> I(k * nq);
+		std::vector<float> D(k * nq);
 
-        gpu_index->search(nq, xq, k, D, I);
+        gpu_index->search(nq, xq.data(), k, D.data(), I.data());
 
         // print results
         printf("I (5 first results)=\n");
@@ -82,9 +87,6 @@ int main() {
                 printf("%5ld ", I[i * k + j]);
             printf("\n");
         }
-
-        delete [] I;
-        delete [] D;
     }
 
     delete gpu_index;
@@ -92,9 +94,6 @@ int main() {
     for(int i = 0; i < ngpus; i++) {
         delete res[i];
     }
-
-    delete [] xb;
-    delete [] xq;
 
     return 0;
 }
