@@ -14,7 +14,8 @@
 #include <sstream>
 #include <time.h>
 #include <unordered_map>
-
+#include <random>
+#include <chrono>
 namespace faiss { namespace gpu {
 
 inline float relativeError(float a, float b) {
@@ -25,17 +26,25 @@ inline float relativeError(float a, float b) {
 // is all within a single thread, so it is ok
 long s_seed = 1;
 
+std::random_device rd;  //Will be used to obtain a seed for the random number engine
+std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+std::uniform_int_distribution<int> dis(0, 0x7FFFFFFF);
+
 void newTestSeed() {
-  struct timespec t;
+  /*struct timespec t;
   clock_gettime(CLOCK_REALTIME, &t);
 
-  setTestSeed(t.tv_nsec);
+  setTestSeed(t.tv_nsec);*/
+    auto now = std::chrono::system_clock::now();
+    std::chrono::system_clock::rep count = now.time_since_epoch().count();
+    setTestSeed((int)(count % 1000000000));
 }
 
 void setTestSeed(long seed) {
   printf("testing with random seed %ld\n", seed);
 
-  srand48(seed);
+  //srand48(seed);
+  gen.seed(seed);
   s_seed = seed;
 }
 
@@ -43,7 +52,7 @@ int randVal(int a, int b) {
   EXPECT_GE(a, 0);
   EXPECT_LE(a, b);
 
-  return a + (lrand48() % (b + 1 - a));
+  return a + (dis(gen) % (b + 1 - a));
 }
 
 bool randBool() {

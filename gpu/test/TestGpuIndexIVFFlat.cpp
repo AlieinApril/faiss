@@ -16,7 +16,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 #include <vector>
-
+#include <algorithm>
 // FIXME: figure out a better way to test fp16
 constexpr float kF16MaxRelErr = 0.3f;
 constexpr float kF32MaxRelErr = 0.03f;
@@ -540,6 +540,7 @@ TEST(TestGpuIndexIVFFlat, UnifiedMemory) {
                              0.015f);
 }
 
+#if ! defined(GTEST_MAIN)
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
 
@@ -548,3 +549,4 @@ int main(int argc, char** argv) {
 
   return RUN_ALL_TESTS();
 }
+#endif

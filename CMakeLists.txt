@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.15)
 
 # faiss project
@@ -71,7 +72,9 @@ endif(BUILD_TUTORIAL)
 if(BUILD_TEST)
 	enable_testing()
 	include(GoogleTest)
+	add_subdirectory(extern/googletest)
     add_subdirectory(tests)
+	add_subdirectory(gpu/test)
 endif(BUILD_TEST)
 # Install libraries
 install(TARGETS ${faiss_lib}

@@ -63,5 +63,4 @@ endforeach(source)
 # list(remove_item faiss_gpu_cpp ${cmake_current_source_dir}/perf/perfivfpqadd.cpp)
 # list(remove_item faiss_gpu_cpp ${cmake_current_source_dir}/perf/writeindex.cpp)
 
-add_library(${faiss_lib_gpu} STATIC ${faiss_gpu_headers} ${faiss_gpu_cpp} ${faiss_gpu_cuh} ${faiss_gpu_cu})
-add_subdirectory(test)
+add_library(${faiss_lib_gpu} STATIC ${faiss_gpu_headers} ${faiss_gpu_cpp} ${faiss_gpu_cuh} ${faiss_gpu_cu}) 

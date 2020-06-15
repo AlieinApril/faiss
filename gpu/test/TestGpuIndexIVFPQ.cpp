@@ -16,7 +16,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 #include <vector>
-
+#include <algorithm>
 
 void pickEncoding(int& codes, int& dim) {
   std::vector<int> codeSizes{
@@ -547,7 +547,7 @@ TEST(TestGpuIndexIVFPQ, UnifiedMemory) {
                              0.1f,
                              0.015f);
 }
-
+#if ! defined(GTEST_MAIN)
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
 
@@ -556,3 +556,4 @@ int main(int argc, char** argv) {
 
   return RUN_ALL_TESTS();
 }
+#endif
