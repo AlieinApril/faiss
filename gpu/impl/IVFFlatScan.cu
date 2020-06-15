@@ -193,7 +193,7 @@ runIVFFlatScanTile(Tensor<float, 2, true>& queries,
                    Tensor<float, 3, true>& residualBase,
                    GpuScalarQuantizer* scalarQ,
                    Tensor<float, 2, true>& outDistances,
-                   Tensor<long, 2, true>& outIndices,
+                   Tensor<int64_t, 2, true>& outIndices,
                    cudaStream_t stream) {
   int dim = queries.getSize(1);
 

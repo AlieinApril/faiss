@@ -70,7 +70,7 @@ __global__ void
 ivfpqInvertedListAppend(Tensor<int, 1, true> listIds,
                         Tensor<int, 1, true> listOffset,
                         Tensor<int, 2, true> encodings,
-                        Tensor<long, 1, true> indices,
+                        Tensor<int64_t, 1, true> indices,
                         void** listCodes,
                         void** listIndices) {
   int encodingToAdd = blockIdx.x * blockDim.x + threadIdx.x;
@@ -112,7 +112,7 @@ void
 runIVFPQInvertedListAppend(Tensor<int, 1, true>& listIds,
                            Tensor<int, 1, true>& listOffset,
                            Tensor<int, 2, true>& encodings,
-                           Tensor<long, 1, true>& indices,
+                           Tensor<int64_t, 1, true>& indices,
                            thrust::device_vector<void*>& listCodes,
                            thrust::device_vector<void*>& listIndices,
                            IndicesOptions indicesOptions,

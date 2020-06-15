@@ -94,7 +94,7 @@ class IVFPQ : public IVFBase {
                               DeviceTensor<int, 2, true>& coarseIndices,
                               int k,
                               Tensor<float, 2, true>& outDistances,
-                              Tensor<long, 2, true>& outIndices);
+                              Tensor<int64_t, 2, true>& outIndices);
 
   /// Runs kernels for scanning inverted lists without precomputed codes
   void runPQNoPrecomputedCodes_(Tensor<float, 2, true>& queries,
@@ -102,7 +102,7 @@ class IVFPQ : public IVFBase {
                                 DeviceTensor<int, 2, true>& coarseIndices,
                                 int k,
                                 Tensor<float, 2, true>& outDistances,
-                                Tensor<long, 2, true>& outIndices);
+                                Tensor<int64_t, 2, true>& outIndices);
 
   /// Runs kernels for scanning inverted lists without precomputed codes (for
   /// different coarse centroid type)
@@ -112,7 +112,7 @@ class IVFPQ : public IVFBase {
                                  DeviceTensor<int, 2, true>& coarseIndices,
                                  int k,
                                  Tensor<float, 2, true>& outDistances,
-                                 Tensor<long, 2, true>& outIndices);
+                                 Tensor<int64_t, 2, true>& outIndices);
 
  private:
   /// Number of sub-quantizers per vector
