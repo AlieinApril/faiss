@@ -13,6 +13,7 @@
 #include <faiss/gpu/utils/Tensor.cuh>
 #include <faiss/gpu/utils/StaticUtils.h>
 
+#include <algorithm>
 namespace faiss { namespace gpu {
 
 //
