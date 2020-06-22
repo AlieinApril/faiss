@@ -61,7 +61,7 @@ IVFBase::reserveMemory(size_t numVecs) {
       (indicesOptions_ == INDICES_64_BIT)) {
     // Reserve for index lists as well
     size_t bytesPerIndexList = vecsPerList *
-      (indicesOptions_ == INDICES_32_BIT ? sizeof(int) : sizeof(long));
+      (indicesOptions_ == INDICES_32_BIT ? sizeof(int) : sizeof(int64_t));
 
     for (auto& list : deviceListIndices_) {
       list->reserve(bytesPerIndexList, stream);
@@ -276,7 +276,7 @@ IVFBase::addIndicesFromCpu_(int listId,
                         true /* exact reserved size */);
   } else if (indicesOptions_ == INDICES_64_BIT) {
     listIndices->append((unsigned char*) indices,
-                        numVecs * sizeof(long),
+                        numVecs * sizeof(int64_t),
                         stream,
                         true /* exact reserved size */);
   } else if (indicesOptions_ == INDICES_CPU) {

@@ -89,13 +89,13 @@ ivfpqInvertedListAppend(Tensor<int, 1, true> listIds,
   }
 
   auto encoding = encodings[encodingToAdd];
-  long index = indices[encodingToAdd];
+  int64_t index = indices[encodingToAdd];
 
   if (Opt == INDICES_32_BIT) {
     // FIXME: there could be overflow here, but where should we check this?
     ((int*) listIndices[listId])[offset] = (int) index;
   } else if (Opt == INDICES_64_BIT) {
-    ((long*) listIndices[listId])[offset] = (long) index;
+    ((int64_t*) listIndices[listId])[offset] = (int64_t) index;
   } else {
     // INDICES_CPU or INDICES_IVF; no indices are being stored
   }
@@ -179,7 +179,7 @@ ivfFlatIndicesAppend(Tensor<int, 1, true> listIds,
     // FIXME: there could be overflow here, but where should we check this?
     ((int*) listIndices[listId])[offset] = (int) index;
   } else if (opt == INDICES_64_BIT) {
-    ((long*) listIndices[listId])[offset] = (long) index;
+    ((int64_t*) listIndices[listId])[offset] = (int64_t) index;
   }
 }
 

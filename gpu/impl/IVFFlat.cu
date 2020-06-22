@@ -193,7 +193,7 @@ IVFFlat::classifyAndAddVectors(Tensor<float, 2, true>& vecs,
       if ((indicesOptions_ == INDICES_32_BIT) ||
           (indicesOptions_ == INDICES_64_BIT)) {
         size_t indexSize =
-          (indicesOptions_ == INDICES_32_BIT) ? sizeof(int) : sizeof(long);
+          (indicesOptions_ == INDICES_32_BIT) ? sizeof(int) : sizeof(int64_t);
 
         indices->resize(indices->size() + counts.second * indexSize, stream);
       } else if (indicesOptions_ == INDICES_CPU) {

@@ -17,13 +17,23 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <random>
+#include "TestUtils.h"
 // FIXME: figure out a better way to test fp16
 constexpr float kF16MaxRelErr = 0.3f;
 constexpr float kF32MaxRelErr = 0.03f;
 
-
+namespace faiss {
+namespace gpu {
+    extern std::mt19937 gen; //Standard mersenne_twister_engine seeded with rd()
+    extern std::uniform_int_distribution<int> dis;
+    extern long s_seed;
+}
+}
 struct Options {
   Options() {
+    faiss::gpu::newTestSeed();
+    faiss::gpu::gen.seed(faiss::gpu::s_seed);
     numAdd = 2 * faiss::gpu::randVal(2000, 5000);
     dim = faiss::gpu::randVal(64, 200);
 

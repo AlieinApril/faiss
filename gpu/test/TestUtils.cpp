@@ -24,11 +24,11 @@ inline float relativeError(float a, float b) {
 
 // This seed is also used for the faiss float_rand API; in a test it
 // is all within a single thread, so it is ok
-long s_seed = 1;
+extern long s_seed = 1;
 
 std::random_device rd;  //Will be used to obtain a seed for the random number engine
-std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-std::uniform_int_distribution<int> dis(0, 0x7FFFFFFF);
+extern std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+extern std::uniform_int_distribution<int> dis(0, 0x7FFFFFFF);
 
 void newTestSeed() {
   /*struct timespec t;
