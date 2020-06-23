@@ -12,7 +12,7 @@
 #include <faiss/gpu/utils/Tensor.cuh>
 #include <faiss/gpu/utils/StaticUtils.h>
 #include <math_constants.h> // in CUDA SDK, for CUDART_NAN_F
-
+#include <algorithm>
 namespace faiss { namespace gpu {
 
 template <typename CentroidT, bool LargeDim>

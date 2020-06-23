@@ -46,7 +46,11 @@ class CpuTimer {
   float elapsedMilliseconds();
 
  private:
+#ifdef _MSC_VER
+	 clock_t start_;
+#else
   struct timespec start_;
+#endif
 };
 
 } } // namespace

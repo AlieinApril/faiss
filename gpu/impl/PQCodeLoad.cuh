@@ -31,28 +31,28 @@ namespace faiss { namespace gpu {
 
 // Type-specific wrappers around the PTX bfe.* instruction, for
 // quantization code extraction
-inline __device__ unsigned int getByte(unsigned char v,
+inline __device__ uint32_t getByte(unsigned char v,
                                        int pos,
                                        int width) {
   return v;
 }
 
-inline __device__ unsigned int getByte(unsigned short v,
+inline __device__ uint32_t getByte(unsigned short v,
                                        int pos,
                                        int width) {
-  return getBitfield((unsigned int) v, pos, width);
+  return getBitfield32((uint32_t) v, pos, width);
 }
 
-inline __device__ unsigned int getByte(unsigned int v,
+inline __device__ uint32_t getByte(uint32_t v,
                                        int pos,
                                        int width) {
-  return getBitfield(v, pos, width);
+  return getBitfield32(v, pos, width);
 }
 
-inline __device__ unsigned int getByte(unsigned long v,
+inline __device__ uint32_t getByte(uint64_t v,
                                        int pos,
                                        int width) {
-  return getBitfield(v, pos, width);
+  return getBitfield64(v, pos, width);
 }
 
 template <int NumSubQuantizers>

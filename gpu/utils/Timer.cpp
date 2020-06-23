@@ -43,11 +43,19 @@ KernelTimer::elapsedMilliseconds() {
 }
 
 CpuTimer::CpuTimer() {
+#ifdef _MSC_VER
+	start_ = clock();
+#else
   clock_gettime(CLOCK_REALTIME, &start_);
+#endif
 }
 
 float
 CpuTimer::elapsedMilliseconds() {
+#ifdef _MSC_VER
+	clock_t end = clock();
+	return ((float)((end-start_)*1000.0 / CLOCKS_PER_SEC));
+#else
   struct timespec end;
   clock_gettime(CLOCK_REALTIME, &end);
 
@@ -55,6 +63,7 @@ CpuTimer::elapsedMilliseconds() {
   auto diffNs = end.tv_nsec - start_.tv_nsec;
 
   return 1000.0f * (float) diffS + ((float) diffNs) / 1000000.0f;
+#endif
 }
 
 } } // namespace

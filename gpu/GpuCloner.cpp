@@ -259,7 +259,7 @@ void ToGpuClonerMultiple::copy_ivf_shard (
 
 Index * ToGpuClonerMultiple::clone_Index_to_shards (const Index *index)
 {
-    long n = sub_cloners.size();
+    size_t n = sub_cloners.size();
 
     auto index_ivfpq =
         dynamic_cast<const faiss::IndexIVFPQ *>(index);
@@ -343,7 +343,7 @@ Index * ToGpuClonerMultiple::clone_Index_to_shards (const Index *index)
 
 Index *ToGpuClonerMultiple::clone_Index(const Index *index)
 {
-    long n = sub_cloners.size();
+    size_t n = sub_cloners.size();
     if (n == 1)
         return sub_cloners[0].clone_Index(index);
 

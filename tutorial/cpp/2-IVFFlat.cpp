@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
-
+#include <random>
 #include <faiss/IndexFlat.h>
 #include <faiss/IndexIVFFlat.h>
 
@@ -18,18 +18,24 @@ int main() {
     int nb = 100000;                       // database size
     int nq = 10000;                        // nb of queries
 
-    float *xb = new float[d * nb];
-    float *xq = new float[d * nq];
+	std::vector<float> xb(d * nb);
+	std::vector<float> xq(d* nq);
+
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<float> dis(0, 1);
 
     for(int i = 0; i < nb; i++) {
         for(int j = 0; j < d; j++)
-            xb[d * i + j] = drand48();
+            //xb[d * i + j] = drand48();
+			xb[d * i + j] = dis(gen);
         xb[d * i] += i / 1000.;
     }
 
     for(int i = 0; i < nq; i++) {
         for(int j = 0; j < d; j++)
-            xq[d * i + j] = drand48();
+            //xq[d * i + j] = drand48();
+			xq[d * i + j] = dis(gen);
         xq[d * i] += i / 1000.;
     }
 
@@ -41,15 +47,15 @@ int main() {
     faiss::IndexIVFFlat index(&quantizer, d, nlist, faiss::METRIC_L2);
     // here we specify METRIC_L2, by default it performs inner-product search
     assert(!index.is_trained);
-    index.train(nb, xb);
+    index.train(nb, xb.data());
     assert(index.is_trained);
-    index.add(nb, xb);
+    index.add(nb, xb.data());
 
     {       // search xq
-        long *I = new long[k * nq];
-        float *D = new float[k * nq];
+		std::vector<int64_t> I(k * nq);
+		std::vector<float> D(k * nq);
 
-        index.search(nq, xq, k, D, I);
+        index.search(nq, xq.data(), k, D.data(), I.data());
 
         printf("I=\n");
         for(int i = nq - 5; i < nq; i++) {
@@ -59,7 +65,7 @@ int main() {
         }
 
         index.nprobe = 10;
-        index.search(nq, xq, k, D, I);
+        index.search(nq, xq.data(), k, D.data(), I.data());
 
         printf("I=\n");
         for(int i = nq - 5; i < nq; i++) {
@@ -67,15 +73,6 @@ int main() {
                 printf("%5ld ", I[i * k + j]);
             printf("\n");
         }
-
-        delete [] I;
-        delete [] D;
     }
-
-
-
-    delete [] xb;
-    delete [] xq;
-
     return 0;
 }

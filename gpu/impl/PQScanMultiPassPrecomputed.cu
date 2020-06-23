@@ -18,7 +18,7 @@
 #include <faiss/gpu/utils/MathOperators.cuh>
 #include <faiss/gpu/utils/StaticUtils.h>
 #include <limits>
-
+#include <algorithm>
 namespace faiss { namespace gpu {
 
 // For precomputed codes, this calculates and loads code distances
@@ -234,7 +234,7 @@ runMultiPassTile(Tensor<float, 2, true>& queries,
                  Tensor<int, 3, true>& heapIndices,
                  int k,
                  Tensor<float, 2, true>& outDistances,
-                 Tensor<long, 2, true>& outIndices,
+                 Tensor<int64_t, 2, true>& outIndices,
                  cudaStream_t stream) {
   // Calculate offset lengths, so we know where to write out
   // intermediate results
@@ -390,7 +390,7 @@ void runPQScanMultiPassPrecomputed(Tensor<float, 2, true>& queries,
                                    // output
                                    Tensor<float, 2, true>& outDistances,
                                    // output
-                                   Tensor<long, 2, true>& outIndices,
+                                   Tensor<int64_t, 2, true>& outIndices,
                                    GpuResources* res) {
   constexpr int kMinQueryTileSize = 8;
   constexpr int kMaxQueryTileSize = 128;

@@ -16,7 +16,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 #include <vector>
-
+#include <algorithm>
 
 void pickEncoding(int& codes, int& dim) {
   std::vector<int> codeSizes{
@@ -39,8 +39,8 @@ void pickEncoding(int& codes, int& dim) {
   }
 }
 
-struct Options {
-  Options() {
+struct IVFPQOptions {
+    IVFPQOptions() {
     numAdd = faiss::gpu::randVal(2000, 5000);
     numCentroids = std::sqrt((float) numAdd);
     numTrain = numCentroids * 40;
@@ -66,7 +66,7 @@ struct Options {
       // large codes can only fit using float16
       useFloat16 = true;
     } else {
-      useFloat16 = faiss::gpu::randBool();
+        useFloat16 = false;// faiss::gpu::randBool();
     }
 
     device = faiss::gpu::randVal(0, faiss::gpu::getNumDevices() - 1);
@@ -119,7 +119,7 @@ struct Options {
 
 TEST(TestGpuIndexIVFPQ, Query_L2) {
   for (int tries = 0; tries < 2; ++tries) {
-    Options opt;
+      IVFPQOptions opt;
 
     std::vector<float> trainVecs = faiss::gpu::randVecs(opt.numTrain, opt.dim);
     std::vector<float> addVecs = faiss::gpu::randVecs(opt.numAdd, opt.dim);
@@ -153,7 +153,7 @@ TEST(TestGpuIndexIVFPQ, Query_L2) {
 
 TEST(TestGpuIndexIVFPQ, Query_IP) {
   for (int tries = 0; tries < 2; ++tries) {
-    Options opt;
+    IVFPQOptions opt;
 
     std::vector<float> trainVecs = faiss::gpu::randVecs(opt.numTrain, opt.dim);
     std::vector<float> addVecs = faiss::gpu::randVecs(opt.numAdd, opt.dim);
@@ -188,8 +188,8 @@ TEST(TestGpuIndexIVFPQ, Query_IP) {
 }
 
 TEST(TestGpuIndexIVFPQ, Float16Coarse) {
-  Options opt;
-
+  IVFPQOptions opt;
+  std::cout << opt.dim << " " << opt.codes << " " << opt.bitsPerCode << std::endl;
   std::vector<float> trainVecs = faiss::gpu::randVecs(opt.numTrain, opt.dim);
   std::vector<float> addVecs = faiss::gpu::randVecs(opt.numAdd, opt.dim);
 
@@ -224,7 +224,7 @@ TEST(TestGpuIndexIVFPQ, Float16Coarse) {
 
 TEST(TestGpuIndexIVFPQ, Add_L2) {
   for (int tries = 0; tries < 2; ++tries) {
-    Options opt;
+    IVFPQOptions opt;
 
     std::vector<float> trainVecs = faiss::gpu::randVecs(opt.numTrain, opt.dim);
     std::vector<float> addVecs = faiss::gpu::randVecs(opt.numAdd, opt.dim);
@@ -260,7 +260,7 @@ TEST(TestGpuIndexIVFPQ, Add_L2) {
 
 TEST(TestGpuIndexIVFPQ, Add_IP) {
   for (int tries = 0; tries < 2; ++tries) {
-    Options opt;
+    IVFPQOptions opt;
 
     std::vector<float> trainVecs = faiss::gpu::randVecs(opt.numTrain, opt.dim);
     std::vector<float> addVecs = faiss::gpu::randVecs(opt.numAdd, opt.dim);
@@ -296,7 +296,7 @@ TEST(TestGpuIndexIVFPQ, Add_IP) {
 }
 
 TEST(TestGpuIndexIVFPQ, CopyTo) {
-  Options opt;
+  IVFPQOptions opt;
   std::vector<float> trainVecs = faiss::gpu::randVecs(opt.numTrain, opt.dim);
   std::vector<float> addVecs = faiss::gpu::randVecs(opt.numAdd, opt.dim);
 
@@ -347,7 +347,7 @@ TEST(TestGpuIndexIVFPQ, CopyTo) {
 }
 
 TEST(TestGpuIndexIVFPQ, CopyFrom) {
-  Options opt;
+  IVFPQOptions opt;
   std::vector<float> trainVecs = faiss::gpu::randVecs(opt.numTrain, opt.dim);
   std::vector<float> addVecs = faiss::gpu::randVecs(opt.numAdd, opt.dim);
 
@@ -396,7 +396,7 @@ TEST(TestGpuIndexIVFPQ, CopyFrom) {
 }
 
 TEST(TestGpuIndexIVFPQ, QueryNaN) {
-  Options opt;
+  IVFPQOptions opt;
 
   std::vector<float> trainVecs = faiss::gpu::randVecs(opt.numTrain, opt.dim);
   std::vector<float> addVecs = faiss::gpu::randVecs(opt.numAdd, opt.dim);
@@ -445,7 +445,7 @@ TEST(TestGpuIndexIVFPQ, QueryNaN) {
 }
 
 TEST(TestGpuIndexIVFPQ, AddNaN) {
-  Options opt;
+  IVFPQOptions opt;
 
   faiss::gpu::StandardGpuResources res;
   res.noTempMemory();
@@ -547,7 +547,7 @@ TEST(TestGpuIndexIVFPQ, UnifiedMemory) {
                              0.1f,
                              0.015f);
 }
-
+#if ! defined(GTEST_MAIN)
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
 
@@ -556,3 +556,4 @@ int main(int argc, char** argv) {
 
   return RUN_ALL_TESTS();
 }
+#endif

@@ -119,7 +119,7 @@ IVFPQ::setPrecomputedCodes(bool enable) {
 
 int
 IVFPQ::classifyAndAddVectors(Tensor<float, 2, true>& vecs,
-                             Tensor<long, 1, true>& indices) {
+                             Tensor<int64_t, 1, true>& indices) {
   FAISS_ASSERT(vecs.getSize(0) == indices.getSize(0));
   FAISS_ASSERT(vecs.getSize(1) == dim_);
 
@@ -279,7 +279,7 @@ IVFPQ::classifyAndAddVectors(Tensor<float, 2, true>& vecs,
       if ((indicesOptions_ == INDICES_32_BIT) ||
           (indicesOptions_ == INDICES_64_BIT)) {
         size_t indexSize =
-          (indicesOptions_ == INDICES_32_BIT) ? sizeof(int) : sizeof(long);
+          (indicesOptions_ == INDICES_32_BIT) ? sizeof(int) : sizeof(int64_t);
 
         indices->resize(indices->size() + counts.second * indexSize, stream);
       } else if (indicesOptions_ == INDICES_CPU) {
@@ -315,7 +315,7 @@ IVFPQ::classifyAndAddVectors(Tensor<float, 2, true>& vecs,
   // map. We already resized our map above.
   if (indicesOptions_ == INDICES_CPU) {
     // We need to maintain the indices on the CPU side
-    HostTensor<long, 1, true> hostIndices(indices, stream);
+    HostTensor<int64_t, 1, true> hostIndices(indices, stream);
 
     for (int i = 0; i < hostIndices.getSize(0); ++i) {
       int listId = listIdsHost[i];
@@ -357,7 +357,7 @@ IVFPQ::classifyAndAddVectors(Tensor<float, 2, true>& vecs,
 void
 IVFPQ::addCodeVectorsFromCpu(int listId,
                              const void* codes,
-                             const long* indices,
+                             const int64_t* indices,
                              size_t numVecs) {
   // This list must already exist
   FAISS_ASSERT(listId < deviceListData_.size());
@@ -539,7 +539,7 @@ IVFPQ::query(Tensor<float, 2, true>& queries,
              int nprobe,
              int k,
              Tensor<float, 2, true>& outDistances,
-             Tensor<long, 2, true>& outIndices) {
+             Tensor<int64_t, 2, true>& outIndices) {
   // These are caught at a higher level
   FAISS_ASSERT(nprobe <= GPU_MAX_SELECTION_K);
   FAISS_ASSERT(k <= GPU_MAX_SELECTION_K);
@@ -591,7 +591,7 @@ IVFPQ::query(Tensor<float, 2, true>& queries,
   // FIXME: we might ultimately be calling this function with inputs
   // from the CPU, these are unnecessary copies
   if (indicesOptions_ == INDICES_CPU) {
-    HostTensor<long, 2, true> hostOutIndices(outIndices, stream);
+    HostTensor<int64_t, 2, true> hostOutIndices(outIndices, stream);
 
     ivfOffsetToUserIndex(hostOutIndices.data(),
                          numLists_,
@@ -625,7 +625,7 @@ IVFPQ::runPQPrecomputedCodes_(
   DeviceTensor<int, 2, true>& coarseIndices,
   int k,
   Tensor<float, 2, true>& outDistances,
-  Tensor<long, 2, true>& outIndices) {
+  Tensor<int64_t, 2, true>& outIndices) {
   FAISS_ASSERT(metric_ == MetricType::METRIC_L2);
 
   auto& mem = resources_->getMemoryManagerCurrentDevice();
@@ -709,7 +709,7 @@ IVFPQ::runPQNoPrecomputedCodesT_(
   DeviceTensor<int, 2, true>& coarseIndices,
   int k,
   Tensor<float, 2, true>& outDistances,
-  Tensor<long, 2, true>& outIndices) {
+  Tensor<int64_t, 2, true>& outIndices) {
   auto& coarseCentroids = quantizer_->template getVectorsRef<CentroidT>();
 
   runPQScanMultiPassNoPrecomputed(queries,
@@ -739,7 +739,7 @@ IVFPQ::runPQNoPrecomputedCodes_(
   DeviceTensor<int, 2, true>& coarseIndices,
   int k,
   Tensor<float, 2, true>& outDistances,
-  Tensor<long, 2, true>& outIndices) {
+  Tensor<int64_t, 2, true>& outIndices) {
   if (quantizer_->getUseFloat16()) {
     runPQNoPrecomputedCodesT_<half>(queries,
                                     coarseDistances,

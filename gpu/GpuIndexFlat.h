@@ -20,7 +20,7 @@ struct IndexFlatIP;
 
 namespace faiss { namespace gpu {
 
-struct FlatIndex;
+class FlatIndex;
 
 struct GpuIndexFlatConfig : public GpuIndexConfig {
   inline GpuIndexFlatConfig()

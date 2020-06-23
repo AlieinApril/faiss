@@ -13,15 +13,16 @@
 namespace faiss { namespace gpu {
 
 __device__ __forceinline__
-unsigned int getBitfield(unsigned int val, int pos, int len) {
-  unsigned int ret;
+uint32_t getBitfield32(uint32_t val, int pos, int len) {
+	uint32_t ret;
+
   asm("bfe.u32 %0, %1, %2, %3;" : "=r"(ret) : "r"(val), "r"(pos), "r"(len));
   return ret;
 }
 
 __device__ __forceinline__
-unsigned long getBitfield(unsigned long val, int pos, int len) {
-  unsigned long ret;
+uint64_t getBitfield64(uint64_t val, int pos, int len) {
+	uint64_t ret;
   asm("bfe.u64 %0, %1, %2, %3;" : "=l"(ret) : "l"(val), "r"(pos), "r"(len));
   return ret;
 }

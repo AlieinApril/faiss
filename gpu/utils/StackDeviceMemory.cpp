@@ -13,7 +13,7 @@
 #include <faiss/impl/FaissAssert.h>
 #include <stdio.h>
 #include <sstream>
-
+#include <algorithm>
 namespace faiss { namespace gpu {
 
 StackDeviceMemory::Stack::Stack(int d, size_t sz)
