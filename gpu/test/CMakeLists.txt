@@ -19,7 +19,7 @@ macro(gpufaiss_add_test TESTNAME)
 	target_compile_definitions(${TESTNAME} PUBLIC GTEST_MAIN)
     # link the Google test infrastructure, mocking library, and a default main fuction to
     # the test executable.  Remove g_test_main if writing your own main function.
-    target_link_libraries(${TESTNAME} faiss gpufaiss gtest gmock gtest_main ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
+    target_link_libraries(${TESTNAME} gpufaiss faiss gtest gmock gtest_main ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
     # gtest_discover_tests replaces gtest_add_tests,
     # see https://cmake.org/cmake/help/v3.10/module/GoogleTest.html for more options to pass to it
     gtest_discover_tests(${TESTNAME}

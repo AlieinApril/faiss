@@ -29,7 +29,7 @@ foreach(source ${gpu_srcs})
 
     # target
     add_executable(${name} ${source})
-	target_link_libraries(${name} ${faiss_lib} ${faiss_lib_gpu} ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
+	target_link_libraries(${name} ${faiss_lib_gpu} ${faiss_lib} ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
 
     # Install
     install(TARGETS ${name} DESTINATION bin)
