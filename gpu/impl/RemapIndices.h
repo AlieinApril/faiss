@@ -9,7 +9,7 @@
 #pragma once
 
 #include <vector>
-
+#include <cstdint>
 namespace faiss { namespace gpu {
 
 /// Utility function to translate (list id, offset) to a user index on
