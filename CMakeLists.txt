@@ -1,5 +1,4 @@
-
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.11)
 
 # faiss project
 project(faiss C CXX)
