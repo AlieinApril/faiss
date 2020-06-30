@@ -113,11 +113,11 @@ size_t get_mem_usage_kb ()
     return sz;
 }
 
-#elif __APPLE__
+#else
 
 size_t get_mem_usage_kb ()
 {
-    fprintf(stderr, "WARN: get_mem_usage_kb not implemented on the mac\n");
+    fprintf(stderr, "WARN: get_mem_usage_kb not implemented on the mac and windows\n");
     return 0;
 }
 

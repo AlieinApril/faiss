@@ -5,7 +5,10 @@ import shutil
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-check_fpath = os.path.join("_swigfaiss.so")
+native_module_name = "_swigfaiss.so"
+if os.name == "nt":
+	native_module_name = "_swigfaiss.pyd"
+check_fpath = os.path.join(native_module_name)
 if not os.path.exists(check_fpath):
     print("Could not find {}".format(check_fpath))
     print("Have you run `make` and `make -C python`?")
@@ -15,7 +18,7 @@ shutil.rmtree("faiss", ignore_errors=True)
 os.mkdir("faiss")
 shutil.copyfile("faiss.py", "faiss/__init__.py")
 shutil.copyfile("swigfaiss.py", "faiss/swigfaiss.py")
-shutil.copyfile("_swigfaiss.so", "faiss/_swigfaiss.so")
+shutil.copyfile(native_module_name, os.path.join("faiss",native_module_name))
 try:
     shutil.copyfile("swigfaiss_avx2.py", "faiss/swigfaiss_avx2.py")
     shutil.copyfile("_swigfaiss_avx2.so", "faiss/_swigfaiss_avx2.so")

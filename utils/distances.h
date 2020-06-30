@@ -100,7 +100,7 @@ void fvec_renorm_L2 (size_t d, size_t nx, float * x);
 /* This function exists because the Torch counterpart is extremly slow
    (not multi-threaded + unexpected overhead even in single thread).
    It is here to implement the usual property |x-y|^2=|x|^2+|y|^2-2<x|y>  */
-void inner_product_to_L2sqr (float * dis,
+void inner_product_to_L2sqr (float * __restrict dis,
                              const float * nr1,
                              const float * nr2,
                              size_t n1, size_t n2);

@@ -107,7 +107,6 @@ extern "C" {
 #include <faiss/utils/Heap.h>
 #include <faiss/impl/AuxIndexStructures.h>
 #include <faiss/OnDiskInvertedLists.h>
-
 #include <faiss/Clustering.h>
 
 #include <faiss/utils/hamming.h>
@@ -345,8 +344,9 @@ void gpu_sync_all_devices()
 %include  <faiss/impl/HNSW.h>
 %include  <faiss/IndexHNSW.h>
 %include  <faiss/IndexIVFFlat.h>
+#ifdef __linux || __APPLE__
 %include  <faiss/OnDiskInvertedLists.h>
-
+#endif
 %include  <faiss/impl/lattice_Zn.h>
 %include  <faiss/IndexLattice.h>
 
@@ -649,7 +649,9 @@ struct AsyncIndexSearchC {
 
 %typemap(out) faiss::InvertedLists * {
     DOWNCAST (ArrayInvertedLists)
-    DOWNCAST (OnDiskInvertedLists)
+#ifdef __linux__ || __APPLE__
+	DOWNCAST (OnDiskInvertedLists)
+#endif
     DOWNCAST (VStackInvertedLists)
     DOWNCAST (HStackInvertedLists)
     DOWNCAST (MaskedInvertedLists)
@@ -942,7 +944,9 @@ int * cast_integer_to_int_ptr (long x) {
 
 #include <signal.h>
 void ignore_SIGTTIN() {
+#ifndef _WIN32
     signal(SIGTTIN, SIG_IGN);
+#endif
 }
 %}
 
