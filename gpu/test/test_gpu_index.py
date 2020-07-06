@@ -62,7 +62,7 @@ class EvalIVFPQAccuracy(unittest.TestCase):
         ts.append(time.time())
 
         # adding some ids because there was a bug in this case
-        index.add_with_ids(xb, np.arange(nb) * 3 + 12345)
+        index.add_with_ids(xb, np.arange(nb).astype(np.int64) * 3 + 12345)
         ts.append(time.time())
 
         index.nprobe = 4
@@ -204,7 +204,7 @@ class ReferencedObject(unittest.TestCase):
             index.addIndex(sub_index)
 
         index = faiss.IndexIDMap(index)
-        ids = np.arange(size)
+        ids = np.arange(size).astype(np.int64)
         index.add_with_ids(target, ids)
 
 
