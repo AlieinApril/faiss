@@ -72,9 +72,9 @@ namespace faiss {
 
 // will fail if we write 256G of data at once...
 #define READVECTOR(vec) {                       \
-        long size;                            \
+        size_t size;                            \
         READANDCHECK (&size, 1);                \
-        FAISS_THROW_IF_NOT (size >= 0 && size < (1L << 40));  \
+        FAISS_THROW_IF_NOT (size >= 0 && size < (1LL << 40));  \
         (vec).resize (size);                    \
         READANDCHECK ((vec).data (), size);     \
     }
@@ -200,9 +200,6 @@ static void read_ArrayInvertedLists_sizes (
 }
 
 InvertedLists *read_InvertedLists (IOReader *f, int io_flags) {
-#ifdef _WIN32 || _WIN64
-	throw std::runtime_error("not implemented");
-#else
     uint32_t h;
     READ1 (h);
     if (h == fourcc ("il00")) {
@@ -231,7 +228,9 @@ InvertedLists *read_InvertedLists (IOReader *f, int io_flags) {
         return ails;
     } else if (h == fourcc ("ilar") && (io_flags & IO_FLAG_MMAP)) {
         // then we load it as an OnDiskInvertedLists
-
+#ifdef _WIN32 || _WIN64
+		throw std::runtime_error("not implemented");
+#else
         FileIOReader *reader = dynamic_cast<FileIOReader*>(f);
         FAISS_THROW_IF_NOT_MSG(reader, "mmap only supported for File objects");
         FILE *fdesc = reader->f;
@@ -269,7 +268,11 @@ InvertedLists *read_InvertedLists (IOReader *f, int io_flags) {
         // resume normal reading of file
         fseek (fdesc, o, SEEK_SET);
         return ails;
+#endif
     } else if (h == fourcc ("ilod")) {
+#ifdef _WIN32 || _WIN64
+		throw std::runtime_error("not implemented");
+#else
         OnDiskInvertedLists *od = new OnDiskInvertedLists();
         od->read_only = io_flags & IO_FLAG_READ_ONLY;
         READ1 (od->nlist);
@@ -313,10 +316,10 @@ InvertedLists *read_InvertedLists (IOReader *f, int io_flags) {
         READ1(od->totsize);
         od->do_mmap();
         return od;
+#endif
     } else {
         FAISS_THROW_MSG ("read_InvertedLists: unsupported invlist type");
     }
-#endif
 }
 
 static void read_InvertedLists (
